@@ -16,7 +16,7 @@ PubSubClient client(wifiClient);
 #define ECHO_PIN 3
 #define LED_PIN 4
 
-void flashLED(int times, int delayTime = 500);  
+
 
 void setup() {
 
