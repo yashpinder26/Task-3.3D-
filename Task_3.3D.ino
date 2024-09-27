@@ -1,68 +1,57 @@
 #include <WiFiNINA.h>
 #include <PubSubClient.h>
 
-// WiFi credentials
 const char* ssid = "A16";            
 const char* password = "22222222";   
 
-// MQTT broker details
 const char* mqtt_server = "broker.emqx.io";
-const int mqtt_port = 1883;          // TCP Port for MQTT
+const int mqtt_port = 1883;        
 
-// MQTT topics
 const char* topic_wave = "SIT210/wave";
 
-// WiFi and MQTT clients
 WiFiClient wifiClient;
 PubSubClient client(wifiClient);
 
-// Pins for ultrasonic sensor
 #define TRIG_PIN 2
 #define ECHO_PIN 3
 #define LED_PIN 4
 
-void flashLED(int times, int delayTime = 500);  // Function prototype
+void flashLED(int times, int delayTime = 500);  
 
 void setup() {
-  // Initialize Serial Monitor
+
   Serial.begin(9600);
   
-  // Set up pins
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
 
-  // Connect to Wi-Fi
   connectWiFi();
   
-  // Set MQTT server and callback function
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(mqttCallback);
   
-  // Connect to MQTT broker
   connectMQTT();
 }
 
 void loop() {
-  // Reconnect if disconnected
+ 
   if (!client.connected()) {
     connectMQTT();
   }
   client.loop();
 
-  // Measure distance
   long distance = measureDistance();
 
-  // Detect wave (adjust threshold as needed)
   if (distance < 20) {
     Serial.println("Wave detected!");
     client.publish(topic_wave, "Yashpinder");
-    delay(1000);  // Debounce delay
+    delay(1000); 
   }
 }
 
 void connectWiFi() {
-  // Connect to Wi-Fi network
+ 
   Serial.print("Connecting to Wi-Fi...");
   WiFi.begin(ssid, password);
   
@@ -75,11 +64,11 @@ void connectWiFi() {
 }
 
 void connectMQTT() {
-  // Connect to MQTT broker
+  
   while (!client.connected()) {
     Serial.print("Connecting to MQTT...");
     
-    if (client.connect("ArduinoClient")) {  // Client ID
+    if (client.connect("ArduinoClient")) {  
       Serial.println("Connected");
       client.subscribe(topic_wave);
     } else {
@@ -92,7 +81,7 @@ void connectMQTT() {
 }
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  // Handle incoming messages
+ 
   Serial.print("Message received: ");
   
   for (int i = 0; i < length; i++) {
@@ -100,12 +89,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  // Flash LED 3 times on receiving message
   flashLED(3);
 }
 
 long measureDistance() {
-  // Measure distance with ultrasonic sensor
+ 
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
   
@@ -120,7 +108,6 @@ long measureDistance() {
 }
 
 void flashLED(int times, int delayTime) {
-  // Flash LED specified number of times
   for (int i = 0; i < times; i++) {
     digitalWrite(LED_PIN, HIGH);
     delay(delayTime);
